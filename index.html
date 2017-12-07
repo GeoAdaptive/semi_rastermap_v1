@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet.heat demo</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+      integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+      crossorigin=""/>
+    <!--Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+      integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+      crossorigin=""></script>
+    <!--And add this jquery documentation for downloading and parsing data-->
+    <script
+      src="https://code.jquery.com/jquery-2.2.4.min.js"
+      integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+      crossorigin="anonymous"></script>
+
+    <!-- underscore functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+    <style>
+        #map { width: 1080px; height: 700px; }
+        body { font: 16px/1.4 "Helvetica Neue", Arial, sans-serif; }
+        .ghbtns { position: relative; top: 4px; margin-left: 5px; }
+        a { color: #0077ff; }
+    </style>
+</head>
+<body>
+
+<p>
+    A 10,000-point demo of Leaflet.heat, a tiny and fast Leaflet heatmap plugin.
+    <!-- <iframe class="ghbtns" src="http://ghbtns.com/github-btn.html?user=Leaflet&amp;repo=Leaflet.heat&amp;type=watch&amp;count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="90" height="20"></iframe> -->
+</p>
+
+<div id="map"></div>
+
+<!-- <script src="../node_modules/simpleheat/simpleheat.js"></script>
+<script src="../src/HeatLayer.js"></script> -->
+
+<script src="dist/leaflet-heat.js"></script>
+
+<!-- <script src="http://leaflet.github.io/Leaflet.markercluster/example/realworld.10000.js"></script> -->
+
+<script src = "points.js"></script>
+<script src = "schools_PRY.js"></script>
+
+<script>
+
+var map = L.map('map').setView([-25.288145, -57.625214], 11);
+var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+}).addTo(map);
+
+
+var cities = "https://raw.githubusercontent.com/wenhaowuuu/FinalProject/master/data/EconomicIndicator_Chinesecities.geojson";
+var Paraguay_Middle_Schools = "https://raw.githubusercontent.com/GeoAdaptive/Paraguay_Schools/master/data/INFR_middleschool_Paraguay.geojson?token=AgSQK9tVLjId_zJlXkd4o-K5RkM4e_m2ks5aKxhLwA%3D%3D";
+var points = [ ];
+var points_draft = [ ];
+
+// converting the shapefile points into usable pairs of coordinates
+$(document).ready(function(){
+  $.ajax(Paraguay_Middle_Schools).done(function(data){
+    var parsedData = JSON.parse(data);
+    console.log("parsed1");
+    console.log(parsedData);
+    // console.log(parsedData.features);
+    console.log(parsedData.features[0].geometry.coordinates);
+    var itemB = L.geoJSON(parsedData,
+      {
+        style: {opacity:0.8,width:0.5,color:'#21618C'},
+        pointToLayer: function (feature, latlng) {
+        return new L.circleMarker(latlng, {
+          radius:2,
+          weight:1,
+          opacity:0.9,
+          fillOpacity:0.7,
+        });
+        },
+
+        onEachFeature: function(feature,layer){
+
+        // layer.bindPopup(
+        //   "<b>School Name: </b>" +
+        //   feature.properties.nom_instit +
+        //   "</br>" +
+        //
+        //   "<b>Address: </b>" +
+        //   feature.properties.direccion +
+        //   "</br>" +
+        //
+        //   "</br>" +
+        //   "<b>Data Collected Year: </b>" +
+        //   feature.properties.anio +
+        //   "</br>" +
+        //
+        //   "<b>More information: </b>" +
+        //   "<a href =" + feature.properties.uri + ">here</a>" +
+        //   "</br>"
+        // )
+
+        // console.log(layer.feature.geometry.coordinates);
+        var coordinates = layer.feature.geometry.coordinates;
+        points_draft.push(coordinates);
+       }
+
+    }).addTo(map);
+    // itemB.eachLayer(eachFeatureFunction);
+
+
+
+    _.each(parsedData,function(point){
+      // This won't work!!! WHY? BECAUSE IT'S ALREADY OUT OF THE LOOP!!!
+      // onEachFeature: function(feature, layer){
+      //   console.log(layer);
+      // }
+    });
+
+    // original one, you MUST put these two lines out of the loop and before the heatmap generation!
+
+    console.log(schools);
+    // console.log(points_draft);
+    // console.log(JSON.stringify(points_draft));
+
+    console.log("looped.");
+
+  })
+
+
+  // addressPoints = addressPoints.map(function (p) { return [p[0], p[1]]; });
+  // points = points_draft.map(function (p) { return [p[1], p[0]]; });
+
+  // addressPoints = addressPoints.map(function (p) { return [p[0], p[1]]; });
+  // var heat0 = L.heatLayer(addressPoints).addTo(map);
+  console.log("heatmap ready to generate.");
+  // var heat = L.heatLayer(points).addTo(map);
+
+  schools = schools.map(function (p) { return [p[1], p[0], 2]; });
+
+  console.log("heatmap generated.");
+
+  var heat_schools = L.heatLayer(schools,{
+    radius: 45,
+    blur: 25,
+    maxZoom: 17,
+  }).addTo(map);
+
+  console.log("SCHOOLS heatmap generated.");
+})
+
+</script>
+</body>
+</html>

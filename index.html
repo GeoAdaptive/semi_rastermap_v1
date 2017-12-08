@@ -35,9 +35,16 @@
   <div class = "description" style = "margin:5%;">
     <p style = "font-family: Roboto; font-size: 14px;">Historically, Paraguay has not valued education highly. During Alfredo Stroessner Mattiauda’s presidency (1954–89), education initiatives took a backseat to economic concerns and the task of controlling political adversaries, and teacher salaries fell to extremely low levels. The constitution of 1992 attempted to remedy the long neglect of education. Article 85 of the constitution mandates that 20% of the government dibudget be designated for educational expenditures. This measure, however, has proven to be impractical and has been largely ignored.</p>
   </div>
+  <form class = "parameters" style = "position:absolute; bottom: 5%; left: 5%; margin: auto;">
+        <label>radius size</label>
+        <input id="radius" type="range" min="1" max="50" step="1" value="50"/>
+        <label>blur size</label>
+        <input id="blur" type="range" min="1" max="50" step="1" value="50"/>
+  </form>
 </div>
 
 <div id="map" style = "position:absolute; top:0; bottom:0; width:70%;"></div>
+
 
 <!-- <script src="../node_modules/simpleheat/simpleheat.js"></script>
 <script src="../src/HeatLayer.js"></script> -->
@@ -45,7 +52,6 @@
 <script src="dist/leaflet-heat.js"></script>
 
 <!-- <script src="http://leaflet.github.io/Leaflet.markercluster/example/realworld.10000.js"></script> -->
-
 <script src = "points.js"></script>
 <script src = "schools_PRY.js"></script>
 
@@ -66,8 +72,18 @@ var Paraguay_Middle_Schools = "https://raw.githubusercontent.com/GeoAdaptive/Par
 var points = [ ];
 var points_draft = [ ];
 
+
+
+
+var heat_schools;
+var blur_value;
+var radius_value;
+
 // converting the shapefile points into usable pairs of coordinates
 $(document).ready(function(){
+  var blur = document.getElementById('blur');
+  var radius = document.getElementById('radius');
+
   $.ajax(Paraguay_Middle_Schools).done(function(data){
     var parsedData = JSON.parse(data);
     console.log("parsed1");
@@ -134,10 +150,8 @@ $(document).ready(function(){
 
   })
 
-
   // addressPoints = addressPoints.map(function (p) { return [p[0], p[1]]; });
   // points = points_draft.map(function (p) { return [p[1], p[0]]; });
-
   // addressPoints = addressPoints.map(function (p) { return [p[0], p[1]]; });
   // var heat0 = L.heatLayer(addressPoints).addTo(map);
   console.log("heatmap ready to generate.");
@@ -147,14 +161,75 @@ $(document).ready(function(){
 
   console.log("heatmap generated.");
 
-  var heat_schools = L.heatLayer(schools,{
-    radius: 45,
-    blur: 25,
+  heat_schools = L.heatLayer(schools,{
+
+    //001 TRYING TO GET AROUND THE SETRADIUS NOT FUNCTION ERROR.
+    //BUT STILL CANNOT RUN INTO THE FUNCTION BELOW.
+    // radius:
+    // function(){
+    //   console.log("function run 1.");
+    //   if(radius_value){
+    //     return radius_value;
+    //     console.log("radius not null.");
+    //   } else {
+    //     return 45;
+    //     console.log("radius set 45.");
+    //   }
+    // },
+    //
+    // blur:
+    // function(){
+    //   console.log("function run 2.");
+    //   if(blur_value){
+    //     return blur_value;
+    //     console.log("blur not null.");
+    //   } else {
+    //     return 25;
+    //     console.log("blur set 25.");
+    //   }
+    // },
+
+    // 002 THE ORIGINAL STATIC FUNCTION
+    // radius: 45,
+    // blur: 25,
+
     maxZoom: 17,
+    // minZoom: 10,
   }).addTo(map);
 
+  console.log(heat_schools.radius);
+  console.log(heat_schools.maxZoom);
   console.log("SCHOOLS heatmap generated.");
+
+  // 003 TRYING TO SET UP THE LISTENERS IN A DYNAMIC WAY
+  var remap = function(){
+    // map.addEventListener('input', function(){
+      blur.addEventListener('input', function() {
+              map.removeLayer(heat_schools);
+              blur_value = parseInt(blur.value, 10);
+              // heat_schools.setBlur(parseInt(blur.value, 10));
+            });
+
+      radius.addEventListener('input', function() {
+              map.removeLayer(heat_schools);
+              radius_value = parseInt(radius.value, 10);
+              // heat_schools.setRadius(parseInt(radius.value, 10));
+            });
+      var heat_schools1 = L.heatLayer(schools,{
+        radius: radius_value,
+        blur: blur_value,
+        maxZoom: 17,
+      }).addTo(map);
+    // });
+  }
+
+  remap();
+
+
 })
+
+
+
 
 </script>
 </body>

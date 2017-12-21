@@ -35,13 +35,22 @@
   <div class = "description" style = "margin:5%;">
     <p style = "font-family: Roboto; font-size: 14px;">Historically, Paraguay has not valued education highly. During Alfredo Stroessner Mattiauda’s presidency (1954–89), education initiatives took a backseat to economic concerns and the task of controlling political adversaries, and teacher salaries fell to extremely low levels. The constitution of 1992 attempted to remedy the long neglect of education. Article 85 of the constitution mandates that 20% of the government dibudget be designated for educational expenditures. This measure, however, has proven to be impractical and has been largely ignored.</p>
   </div>
-  <form class = "parameters" style = "position:absolute; bottom: 5%; left: 5%; margin: auto;">
+  <!-- <form class = "parameters" style = "position:absolute; bottom: 5%; left: 5%; margin: auto;">
         <label>radius size</label>
         <input id="radius" type="range" min="1" max="50" step="1" value="50"/>
         <label>blur size</label>
         <input id="blur" type="range" min="1" max="50" step="1" value="50"/>
-  </form>
+  </form> -->
 </div>
+<button id="display" style="position:absolute;width:6%; height:4%;right:18%;bottom:4%;font-size:14px;z-index:70;">
+  map
+</button>
+<button id="heatmap" style="position:absolute;width:6%; height:4%;right:10%;bottom:4%;font-size:14px;z-index:70;">
+  heatmap
+</button>
+<button id="reset" style="position:absolute;width:6%; height:4%;right:2%;bottom:4%;font-size:14px;z-index:70;">
+  remove
+</button>
 
 <div id="map" style = "position:absolute; top:0; bottom:0; width:70%;"></div>
 
@@ -67,13 +76,13 @@ var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 
-var cities = "https://raw.githubusercontent.com/wenhaowuuu/FinalProject/master/data/EconomicIndicator_Chinesecities.geojson";
-var Paraguay_Middle_Schools = "https://raw.githubusercontent.com/GeoAdaptive/Paraguay_Schools/master/data/INFR_middleschool_Paraguay.geojson?token=AgSQK9tVLjId_zJlXkd4o-K5RkM4e_m2ks5aKxhLwA%3D%3D";
+// var cities = "https://raw.githubusercontent.com/wenhaowuuu/FinalProject/master/data/EconomicIndicator_Chinesecities.geojson";
+var Paraguay_Middle_Schools = "https://raw.githubusercontent.com/GeoAdaptive/Paraguay_Schools_V3/master/data/INFR_middleschool_Paraguay.geojson?token=AgSQK89YBfdM6y9_rc1d1pt157j0WgUQks5aRVrWwA%3D%3D";
 var points = [ ];
 var points_draft = [ ];
 
 
-
+var mappedschools;
 
 var heat_schools;
 var blur_value;
@@ -90,15 +99,15 @@ $(document).ready(function(){
     console.log(parsedData);
     // console.log(parsedData.features);
     console.log(parsedData.features[0].geometry.coordinates);
-    var itemB = L.geoJSON(parsedData,
+    mappedschools = L.geoJSON(parsedData,
       {
         style: {opacity:0.8,width:0.5,color:'#21618C'},
         pointToLayer: function (feature, latlng) {
         return new L.circleMarker(latlng, {
-          radius:2,
+          radius:1.5,
           weight:1,
-          opacity:0.9,
-          fillOpacity:0.7,
+          opacity:0.5,
+          fillOpacity:0.5,
         });
         },
 
@@ -128,28 +137,17 @@ $(document).ready(function(){
         points_draft.push(coordinates);
        }
 
-    }).addTo(map);
-    // itemB.eachLayer(eachFeatureFunction);
-
-
-
-    _.each(parsedData,function(point){
-      // This won't work!!! WHY? BECAUSE IT'S ALREADY OUT OF THE LOOP!!!
-      // onEachFeature: function(feature, layer){
-      //   console.log(layer);
-      // }
     });
-
+    // itemB.eachLayer(eachFeatureFunction);
     // original one, you MUST put these two lines out of the loop and before the heatmap generation!
-
-    console.log(schools);
     // console.log(points_draft);
     // console.log(JSON.stringify(points_draft));
-
     console.log("looped.");
-
   })
 
+
+
+  //GENERATE HEAT MAP!
   // addressPoints = addressPoints.map(function (p) { return [p[0], p[1]]; });
   // points = points_draft.map(function (p) { return [p[1], p[0]]; });
   // addressPoints = addressPoints.map(function (p) { return [p[0], p[1]]; });
@@ -162,6 +160,9 @@ $(document).ready(function(){
   console.log("heatmap generated.");
 
   heat_schools = L.heatLayer(schools,{
+
+      radius: 30,
+      blur: 25,
 
     //001 TRYING TO GET AROUND THE SETRADIUS NOT FUNCTION ERROR.
     //BUT STILL CANNOT RUN INTO THE FUNCTION BELOW.
@@ -195,40 +196,56 @@ $(document).ready(function(){
 
     maxZoom: 17,
     // minZoom: 10,
-  }).addTo(map);
+  });
 
   console.log(heat_schools.radius);
   console.log(heat_schools.maxZoom);
   console.log("SCHOOLS heatmap generated.");
 
+
   // 003 TRYING TO SET UP THE LISTENERS IN A DYNAMIC WAY
-  var remap = function(){
-    // map.addEventListener('input', function(){
-      blur.addEventListener('input', function() {
-              map.removeLayer(heat_schools);
-              blur_value = parseInt(blur.value, 10);
-              // heat_schools.setBlur(parseInt(blur.value, 10));
-            });
+  // var remap = function(){
+  //   // map.addEventListener('input', function(){
+  //     blur.addEventListener('input', function() {
+  //             map.removeLayer(heat_schools);
+  //             blur_value = parseInt(blur.value, 10);
+  //             // heat_schools.setBlur(parseInt(blur.value, 10));
+  //           });
+  //
+  //     radius.addEventListener('input', function() {
+  //             map.removeLayer(heat_schools);
+  //             radius_value = parseInt(radius.value, 10);
+  //             // heat_schools.setRadius(parseInt(radius.value, 10));
+  //           });
+  //     var heat_schools1 = L.heatLayer(schools,{
+  //       radius: radius_value,
+  //       blur: blur_value,
+  //       maxZoom: 17,
+  //     }).addTo(map);
+  //   // });
+  // }
 
-      radius.addEventListener('input', function() {
-              map.removeLayer(heat_schools);
-              radius_value = parseInt(radius.value, 10);
-              // heat_schools.setRadius(parseInt(radius.value, 10));
-            });
-      var heat_schools1 = L.heatLayer(schools,{
-        radius: radius_value,
-        blur: blur_value,
-        maxZoom: 17,
-      }).addTo(map);
-    // });
-  }
-
-  remap();
+  // remap();
 
 
 })
 
+//control the display of the heatmap
+$('#display').click(function(){
+  map.addLayer(mappedschools);
+  console.log("schools mapped.");
+});
 
+$('#heatmap').click(function(){
+  map.addLayer(heat_schools);
+  console.log("middleschools heatmap displayed.");
+});
+
+$('#reset').click(function(){
+  map.removeLayer(heat_schools);
+  map.removeLayer(mappedschools);
+  console.log("layer removed.");
+})
 
 
 </script>
